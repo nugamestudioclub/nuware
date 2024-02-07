@@ -4,30 +4,111 @@ using UnityEngine;
 
 public class KeyDisplayController : MonoBehaviour
 {
+    public enum Player
+    {
+        ONE, TWO, THREE, FOUR
+    }
+
+    [SerializeField]
+    private const int BUTTON_FONT_SIZE_NORMAL = 150;
+    [SerializeField]
+    private const int BUTTON_FONT_SIZE_PRESSED = 200;
+
+    private Dictionary<Player, int> scores = 
+        new Dictionary<Player, int> { { Player.ONE, 25 }, { Player.TWO, 25 }, { Player.THREE, 25 }, { Player.FOUR, 25 } };
+
     private GameObject key;
+    private GameObject scoreDisplay;
     private List<string> buttons = new List<string> { "A", "B", "X", "Y" };
     private string selectedButton;
+    private int totalPressCount = 0;
+    private int pressLimit;
 
     // Start is called before the first frame update
     void Start()
     {
         key = transform.GetChild(0).gameObject;
+        scoreDisplay = transform.GetChild(1).gameObject;
+
+        key.GetComponent<TMPro.TMP_Text>().alignment = TMPro.TextAlignmentOptions.Center;
         selectedButton = buttons[Random.Range(0, buttons.Count)];
-        StartCoroutine(UpdateButton());
+        pressLimit = Random.Range(10, 15);
+
+        SetButtonDisplaySize(BUTTON_FONT_SIZE_NORMAL);
+        RefreshButtonDisplay();
+        UpdateScoreDisplay();
     }
 
-    IEnumerator UpdateButton()
+    void Update()
     {
-        TMPro.TMP_Text text = key.GetComponent<TMPro.TMP_Text>();
-        while (true)
+        SetButtonDisplaySize(GetButtonDisplaySize() + (BUTTON_FONT_SIZE_NORMAL - GetButtonDisplaySize()) / 10);
+
+        // this is temporary for testing purposes
+        if (Input.GetKeyDown(KeyCode.A))
         {
-            //text.SetText(counter.ToString());
-            text.SetText(selectedButton);
-            RandomizeButton();
-            yield return new WaitForSeconds(1);
+            OnButtonPress(Player.ONE, "A");
+        }
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            OnButtonPress(Player.ONE, "B");
+        }
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            OnButtonPress(Player.ONE, "X");
+        }
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
+            OnButtonPress(Player.ONE, "Y");
         }
     }
 
+    // when the controller receives a button input from a player
+    public void OnButtonPress(Player player, string button)
+    {
+        // scoring
+        scores[player] += button.Equals(selectedButton) ? -1 : 3;
+
+        // button randomizing
+        if (totalPressCount < pressLimit)
+        {
+            totalPressCount += 1;
+        } else
+        {
+            totalPressCount = 0;
+            pressLimit = Random.Range(10, 15);
+            RandomizeButton();
+            RefreshButtonDisplay();
+        }
+        UpdateScoreDisplay();
+        SetButtonDisplaySize(BUTTON_FONT_SIZE_PRESSED);
+    }
+
+    // sets the displayed button to the currently selected one
+    private void RefreshButtonDisplay()
+    {
+        SetButtonDisplay(selectedButton);
+    }
+
+    // sets the displayed button to the given button string
+    private void SetButtonDisplay(string button)
+    {
+        key.GetComponent<TMPro.TMP_Text>().SetText(selectedButton);
+    }
+
+    // gets the size of the button display as a positive integer
+    private int GetButtonDisplaySize()
+    {
+        return (int) key.GetComponent<TMPro.TMP_Text>().fontSize;
+    }
+
+    // sets the size of the button display
+    private void SetButtonDisplaySize(int size)
+    {
+        key.GetComponent<TMPro.TMP_Text>().fontSize = size;
+    }
+
+    // randomizes the currently selected button (but does not update the button display, which will
+    // continue to store the previous button until its display is refreshed)
     private void RandomizeButton()
     {
         string newButton;
@@ -36,5 +117,15 @@ public class KeyDisplayController : MonoBehaviour
             newButton = buttons[Random.Range(0, buttons.Count)];
         } while (newButton == selectedButton);
         selectedButton = newButton;
+    }
+
+    private void UpdateScoreDisplay()
+    {
+        string scoreString = "";
+        foreach (Player player in new List<Player> { Player.ONE, Player.TWO, Player.THREE, Player.FOUR })
+        {
+            scoreString += scores[player].ToString() + "\n";
+        }
+        scoreDisplay.GetComponent<TMPro.TMP_Text>().SetText(scoreString.Trim());
     }
 }
