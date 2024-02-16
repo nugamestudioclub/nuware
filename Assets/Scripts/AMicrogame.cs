@@ -5,20 +5,21 @@ using UnityEngine;
 public abstract class AMicrogame : MonoBehaviour, IMicrogame
 {
     [SerializeField]
-    private IList<string> m_currentWinners;
+    private IList<int> m_currentWinners;
 
     [SerializeField]
     private SerializableInterface<IPossessable>[] m_possessibles;
 
     private PartyManager m_partyManager;
 
-    public virtual void AwakeGame(IList<string> microgame_players)
+    public virtual void AwakeGame(IList<int> microgame_players)
     {
         // everyone is a winner, initially :)
         m_currentWinners = microgame_players;
 
-        m_partyManager = PersistantManager.instance.FindInHierarchy(
-            PersistantManager.instance.GetComponentPredicate<PartyManager>())
+        m_partyManager = 
+            PersistantManager.instance.FindInHierarchy(
+                PersistantManager.instance.GetComponentPredicate<PartyManager>())
             .GetComponent<PartyManager>();
 
         if (!m_partyManager)
@@ -38,11 +39,11 @@ public abstract class AMicrogame : MonoBehaviour, IMicrogame
 
     public virtual void EndGame()
     {
-        foreach (string name in m_partyManager.GetPlayerNames())
-            m_partyManager.Free(name);
+        foreach (int id in m_partyManager.GetPlayers())
+            m_partyManager.Free(id);
     }
 
-    public IList<string> GetWinners()
+    public IList<int> GetWinners()
     {
         return m_currentWinners;
     }

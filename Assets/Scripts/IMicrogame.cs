@@ -14,7 +14,7 @@ public interface IMicrogame
     /// handle the doling out of penalties and victories.
     /// </summary>
     /// <returns>A list of all players who "won" the microgame.</returns>
-    IList<string> GetWinners();
+    IList<int> GetWinners();
 
     /// <summary>
     /// This function handles the pre-intialization of things you may need
@@ -23,7 +23,7 @@ public interface IMicrogame
     /// 
     /// Takes in a list of players of the game.
     /// </summary>
-    void AwakeGame(IList<string> microgame_players);
+    void AwakeGame(IList<int> microgame_players);
 
     /// <summary>
     /// The basic signal to start your game.
