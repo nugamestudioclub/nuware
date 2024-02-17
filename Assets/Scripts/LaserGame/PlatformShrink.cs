@@ -12,19 +12,22 @@ public class PlatformShrink : MonoBehaviour
     private float startTime;
     private float currentTime;
 
+    private bool gameStarted = false;
+
     // Start is called before the first frame update
     void Start()
     {
 
         transform.localScale = new Vector3(startSize, 0.2f, startSize);
         startTime = Time.time;
+        gameStarted = true;
     }
 
     // Update is called once per frame
     void Update()
     {
         currentTime = Time.time;
-        if (LaserMicrogameController.gameStarted)
+        if (gameStarted) //replace with LaserMicroGameController.gameStarted
         {
             float currentSize = (1 - ((currentTime - startTime) / timeToShrink)) * startSize;
             transform.localScale = new Vector3(currentSize, 0.2f, currentSize);
