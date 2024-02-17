@@ -22,8 +22,9 @@ public interface IMicrogame
     /// timer, intializing scores, setting positions, etc.
     /// 
     /// Takes in a list of players of the game.
+    /// Returns the duration of the game.
     /// </summary>
-    void AwakeGame(IList<int> microgame_players);
+    float AwakeGame(IList<int> microgame_players, DifficultyType difficulty);
 
     /// <summary>
     /// The basic signal to start your game.
