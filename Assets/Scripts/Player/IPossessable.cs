@@ -10,8 +10,10 @@ public interface IPossessable
     /// Primarily used to customize a possessable's appearance to fit a player.
     /// This means changing the color of the item to match the player, swapping
     /// to a correct model, etc.
+    /// 
+    /// Takes in the player id associated with the possessable.
     /// </summary>
-    void Initialize();
+    void Initialize(int player);
 
     /// <summary>
     /// For one directional input, this is called 3 times:

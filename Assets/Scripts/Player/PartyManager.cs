@@ -57,16 +57,16 @@ public class PartyManager : MonoBehaviour
             return -1;
         }
 
-        int player_index = AddLowestNumber();
-        player.name = $"Player {player_index}";
+        int player_id = AddLowestNumber();
+        player.name = $"Player {player_id}";
 
-        m_playerInstanceIDMap.Add(player.GetInstanceID(), player_index);
-        m_playerDataMap.Add(player_index, new PlayerData(-1, m_playerColors[player_index - 1])); // player HP is set upon game start
-        m_playerInputMap.Add(player_index, player.GetComponent<PlayerInputHandler>());
+        m_playerInstanceIDMap.Add(player.GetInstanceID(), player_id);
+        m_playerDataMap.Add(player_id, new PlayerData(-1, m_playerColors[player_id - 1])); // player HP is set upon game start
+        m_playerInputMap.Add(player_id, player.GetComponent<PlayerInputHandler>());
 
         player.transform.parent = transform;
 
-        return player_index;
+        return player_id;
     }
 
     public void RemovePlayer(GameObject player)
