@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 public class JoinPossessable : MonoBehaviour, IPossessable
@@ -11,12 +12,24 @@ public class JoinPossessable : MonoBehaviour, IPossessable
 
     public void OnButtonEvent(IDictionary<ButtonType, InputContextType> map)
     {
-        if (map[ButtonType.East] == InputContextType.Started) Debug.Log("Pressed a button!");
-        if (map[ButtonType.North] == InputContextType.Started) Debug.Log("Quit.");
+        Debug.Log(PrintDictionary(map));
     }
 
     public void OnLateralEvent((Vector2 Data, InputContextType ContextType) data_tuple)
     {
         // pass
     }
+
+    private string PrintDictionary(IDictionary<ButtonType, InputContextType> map)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        foreach (var item in map)
+        {
+            sb.Append(item.ToString() + "\n");
+        }
+
+        return sb.ToString();
+    }
+
 }
