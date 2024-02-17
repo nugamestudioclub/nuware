@@ -8,11 +8,11 @@ public abstract class AMicrogame : MonoBehaviour, IMicrogame
     private IList<int> m_currentWinners;
 
     [SerializeField]
-    private SerializableInterface<IPossessable>[] m_possessibles;
+    private SerializableInterface<IPossessable>[] m_possessibles = new SerializableInterface<IPossessable>[4];
 
     private PartyManager m_partyManager;
 
-    public virtual void AwakeGame(IList<int> microgame_players)
+    public virtual float AwakeGame(IList<int> microgame_players, DifficultyType difficulty)
     {
         // everyone is a winner, initially :)
         m_currentWinners = microgame_players;
@@ -25,7 +25,7 @@ public abstract class AMicrogame : MonoBehaviour, IMicrogame
         if (!m_partyManager)
         {
             Debug.LogError("Party Manager not found!");
-            return;
+            return -1f;
         }
 
         // shuffle?
@@ -35,6 +35,8 @@ public abstract class AMicrogame : MonoBehaviour, IMicrogame
             m_partyManager.Possess(microgame_players[i], m_possessibles[i].Value);
             m_possessibles[i].Value.Initialize();
         }
+
+        return CalculateGameDuration(difficulty);
     }
 
     public virtual void EndGame()
@@ -51,4 +53,6 @@ public abstract class AMicrogame : MonoBehaviour, IMicrogame
     public abstract void StartGame();
 
     public abstract MicrogameData GetData();
+
+    protected abstract float CalculateGameDuration(DifficultyType difficulty);
 }

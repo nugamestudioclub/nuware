@@ -653,6 +653,7 @@ MonoBehaviour:
   - {fileID: 847871544}
   - {fileID: 321398256}
   m_party: {fileID: 739730860}
+  m_playerPossessible: {fileID: 5586839132752908144, guid: 1bf180cfc5ee6fa40839666e828f1d67, type: 3}
 --- !u!4 &661385907
 Transform:
   m_ObjectHideFlags: 0
