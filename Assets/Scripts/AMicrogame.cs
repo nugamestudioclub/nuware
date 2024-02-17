@@ -33,7 +33,7 @@ public abstract class AMicrogame : MonoBehaviour, IMicrogame
         for (int i = 0; i < m_possessibles.Length; i++)
         {
             m_partyManager.Possess(microgame_players[i], m_possessibles[i].Value);
-            m_possessibles[i].Value.Initialize();
+            m_possessibles[i].Value.Initialize(microgame_players[i]);
         }
 
         return CalculateGameDuration(difficulty);

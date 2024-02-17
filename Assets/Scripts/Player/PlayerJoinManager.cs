@@ -24,20 +24,20 @@ public class PlayerJoinManager : MonoBehaviour
 
     public void OnPlayerJoined(PlayerInput input)
     {
-        int player_index = m_party.AddPlayer(input.gameObject);
+        int player_id = m_party.AddPlayer(input.gameObject);
 
         // todo replace
         GameObject clone = Instantiate(m_playerPossessible);
 
-        clone.transform.position = m_podiumPositions[player_index - 1].position + Vector3.up * 15f;
-        clone.GetComponent<MeshRenderer>().material.color = m_party.GetPlayerData(player_index).Color;
+        clone.transform.position = m_podiumPositions[player_id - 1].position + Vector3.up * 15f;
+        clone.GetComponent<MeshRenderer>().material.color = m_party.GetPlayerData(player_id).Color;
 
-        m_idToRepresentation.Add(player_index, clone);
+        m_idToRepresentation.Add(player_id, clone);
 
         IPossessable possessable = clone.GetComponent<IPossessable>();
-        possessable.Initialize();
+        possessable.Initialize(player_id);
 
-        m_party.Possess(player_index, possessable);
+        m_party.Possess(player_id, possessable);
     }
 
     public void OnPlayerRemoved(PlayerInput input)

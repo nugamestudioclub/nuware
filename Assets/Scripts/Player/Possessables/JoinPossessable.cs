@@ -5,9 +5,9 @@ using UnityEngine;
 
 public class JoinPossessable : MonoBehaviour, IPossessable
 {
-    public void Initialize()
+    public void Initialize(int player)
     {
-        Debug.Log("Hello hello!");
+        Debug.Log($"Hello hello, player {player}");
     }
 
     public void OnButtonEvent(IDictionary<ButtonType, InputContextType> map)
