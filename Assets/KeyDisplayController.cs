@@ -10,12 +10,17 @@ public class KeyDisplayController : MonoBehaviour
     }
 
     [SerializeField]
-    private const int BUTTON_FONT_SIZE_NORMAL = 150;
+    private int BUTTON_FONT_SIZE_NORMAL = 150;
     [SerializeField]
-    private const int BUTTON_FONT_SIZE_PRESSED = 200;
+    private int BUTTON_FONT_SIZE_PRESSED = 200;
+    [SerializeField]
+    private int CORRECT_PRESS_POINTS = 1;
+    [SerializeField]
+    private int WRONG_PRESS_PENALTY = 2;
+    [SerializeField]
+    private int STARTING_SCORE = 30;
 
-    private Dictionary<Player, int> scores = 
-        new Dictionary<Player, int> { { Player.ONE, 25 }, { Player.TWO, 25 }, { Player.THREE, 25 }, { Player.FOUR, 25 } };
+    private Dictionary<Player, int> scores;
 
     private GameObject key;
     private GameObject scoreDisplay;
@@ -27,6 +32,15 @@ public class KeyDisplayController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        ResetAll();
+    }
+
+    // resets the game to starting conditions
+    public void ResetAll()
+    {
+        scores = new Dictionary<Player, int> { { Player.ONE, STARTING_SCORE }, { Player.TWO, STARTING_SCORE },
+            { Player.THREE, STARTING_SCORE }, { Player.FOUR, STARTING_SCORE } };
+
         key = transform.GetChild(0).gameObject;
         scoreDisplay = transform.GetChild(1).gameObject;
 
@@ -44,6 +58,23 @@ public class KeyDisplayController : MonoBehaviour
         SetButtonDisplaySize(GetButtonDisplaySize() + (BUTTON_FONT_SIZE_NORMAL - GetButtonDisplaySize()) / 10);
 
         // this is temporary for testing purposes
+        /*if (Input.GetKeyDown(KeyCode.A))
+        {
+            OnButtonPress(Player.ONE, "A");
+        }
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            OnButtonPress(Player.ONE, "B");
+        }
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            OnButtonPress(Player.ONE, "X");
+        }
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
+            OnButtonPress(Player.ONE, "Y");
+        }*/
+
         if (Input.GetKeyDown(KeyCode.A))
         {
             OnButtonPress(Player.ONE, "A");
@@ -66,7 +97,7 @@ public class KeyDisplayController : MonoBehaviour
     public void OnButtonPress(Player player, string button)
     {
         // scoring
-        scores[player] += button.Equals(selectedButton) ? -1 : 3;
+        scores[player] += button.Equals(selectedButton) ? -CORRECT_PRESS_POINTS : WRONG_PRESS_PENALTY;
 
         // button randomizing
         if (totalPressCount < pressLimit)
