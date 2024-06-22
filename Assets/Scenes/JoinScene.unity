@@ -226,7 +226,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 134796579}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -653,7 +653,7 @@ MonoBehaviour:
   - {fileID: 847871544}
   - {fileID: 321398256}
   m_party: {fileID: 739730860}
-  m_playerPossessible: {fileID: 5586839132752908144, guid: 1bf180cfc5ee6fa40839666e828f1d67, type: 3}
+  m_playerAvatar: {fileID: 5586839132752908144, guid: 1bf180cfc5ee6fa40839666e828f1d67, type: 3}
 --- !u!4 &661385907
 Transform:
   m_ObjectHideFlags: 0
@@ -713,12 +713,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4de3eb31c74c975439309b053d3fc462, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_maxPlayers: 4
-  m_playerColors:
-  - {r: 1, g: 0, b: 0, a: 1}
-  - {r: 0, g: 1, b: 0, a: 1}
-  - {r: 0, g: 0, b: 1, a: 1}
-  - {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &833042226
 GameObject:
   m_ObjectHideFlags: 0

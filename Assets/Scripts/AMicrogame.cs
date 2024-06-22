@@ -8,7 +8,7 @@ public abstract class AMicrogame : MonoBehaviour, IMicrogame
     private IList<int> m_currentWinners;
 
     [SerializeField]
-    private SerializableInterface<IPossessable>[] m_possessibles = new SerializableInterface<IPossessable>[4];
+    private SerializableInterface<IAvatar>[] m_avatars = new SerializableInterface<IAvatar>[4];
 
     private PartyManager m_partyManager;
 
@@ -30,19 +30,24 @@ public abstract class AMicrogame : MonoBehaviour, IMicrogame
 
         // shuffle?
 
-        for (int i = 0; i < m_possessibles.Length; i++)
+        for (int i = 0; i < m_avatars.Length; i++)
         {
-            m_partyManager.Possess(microgame_players[i], m_possessibles[i].Value);
-            m_possessibles[i].Value.Initialize(microgame_players[i]);
+            m_partyManager.Possess(microgame_players[i], m_avatars[i].Value);
+            m_avatars[i].Value.Initialize(microgame_players[i], m_partyManager);
         }
 
         return CalculateGameDuration(difficulty);
     }
 
+    /// <summary>
+    /// Free all avatar player binds. Assumes there to be 4 players.
+    /// </summary>
     public virtual void EndGame()
     {
-        foreach (int id in m_partyManager.GetPlayers())
-            m_partyManager.Free(id);
+        m_partyManager.Free(1);
+        m_partyManager.Free(2);
+        m_partyManager.Free(3);
+        m_partyManager.Free(4);
     }
 
     public IList<int> GetWinners()

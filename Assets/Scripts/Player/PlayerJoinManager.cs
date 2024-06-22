@@ -13,44 +13,45 @@ public class PlayerJoinManager : MonoBehaviour
     private PartyManager m_party;
 
     [SerializeField]
-    private GameObject m_playerPossessible;
+    private GameObject m_playerAvatar;
 
-    private Dictionary<int, GameObject> m_idToRepresentation;
+    private Dictionary<int, GameObject> m_numberToAvatar;
 
     private void Awake()
     {
-        m_idToRepresentation = new();
+        m_numberToAvatar = new();
     }
 
     public void OnPlayerJoined(PlayerInput input)
     {
-        int player_id = m_party.AddPlayer(input.gameObject);
+        int player_number = m_party.AddPlayer(input.gameObject);
+        input.gameObject.name = $"Player {player_number}";
 
         // todo replace
-        GameObject clone = Instantiate(m_playerPossessible);
+        GameObject clone = Instantiate(m_playerAvatar);
 
-        clone.transform.position = m_podiumPositions[player_id - 1].position + Vector3.up * 15f;
-        clone.GetComponent<MeshRenderer>().material.color = m_party.GetPlayerData(player_id).Color;
+        clone.transform.position = m_podiumPositions[player_number - 1].position + Vector3.up * 15f;
+        clone.GetComponent<MeshRenderer>().material.color = m_party.GetPlayerData(player_number).Color;
 
-        m_idToRepresentation.Add(player_id, clone);
+        m_numberToAvatar.Add(player_number, clone);
 
-        IPossessable possessable = clone.GetComponent<IPossessable>();
-        possessable.Initialize(player_id);
+        IAvatar avatar = clone.GetComponent<IAvatar>();
+        avatar.Initialize(player_number, m_party);
 
-        m_party.Possess(player_id, possessable);
+        m_party.Possess(player_number, avatar);
     }
 
     public void OnPlayerRemoved(PlayerInput input)
     {
-        int id = m_party.GetPlayerID(input.gameObject);
+        int number = m_party.GetPlayerNumber(input.gameObject);
 
-        m_party.Free(id);
-        m_party.RemovePlayer(input.gameObject);
-        m_idToRepresentation[id].GetComponent<Rigidbody>().AddForce(Vector3.up * Random.Range(1f, 15f) + Vector3.forward * Random.Range(-5f, 5f), ForceMode.Impulse);
+        m_party.Free(number);
+        m_party.RemovePlayer(number);
+        m_numberToAvatar[number].GetComponent<Rigidbody>().AddForce(Vector3.up * Random.Range(1f, 15f) + Vector3.forward * Random.Range(-5f, 5f), ForceMode.Impulse);
 
         Destroy(input.gameObject, 2f);
-        Destroy(m_idToRepresentation[id], 4f);
+        Destroy(m_numberToAvatar[number], 4f);
 
-        m_idToRepresentation.Remove(id);
+        m_numberToAvatar.Remove(number);
     }
 }

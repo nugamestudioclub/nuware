@@ -2,8 +2,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerInputHandler : MonoBehaviour
+public class PlayerInputHandler : MonoBehaviour, IInputHandler
 {
+    [SerializeField]
+    private float m_inputVectorMagnitudeCutoff = 0.1f;
+
     private readonly ButtonType[] types = { ButtonType.North, ButtonType.South, ButtonType.East, ButtonType.West };
 
     public Vector2 CurrentLateral {  get; private set; }
@@ -13,7 +16,7 @@ public class PlayerInputHandler : MonoBehaviour
     public event OnEvent<(Vector2 Data, InputContextType ContextType)> LateralEvent;
     public event OnEvent<IDictionary<ButtonType, InputContextType>> ButtonsEvent;
 
-    private IPossessable m_currentPossession;
+    private IAvatar m_currentPossession;
 
     private void Awake()
     {
@@ -43,9 +46,28 @@ public class PlayerInputHandler : MonoBehaviour
 
     public void OnLateral(InputAction.CallbackContext context)
     {
-        CurrentLateral = context.ReadValue<Vector2>();
+        var vector = context.ReadValue<Vector2>();
+        var context_type = InputContextType.None;
 
-        LateralEvent?.Invoke((CurrentLateral, ParseType(context)));
+        bool is_input_present = vector.sqrMagnitude > m_inputVectorMagnitudeCutoff;
+        bool is_current_present = CurrentLateral.sqrMagnitude > m_inputVectorMagnitudeCutoff;
+
+        if (is_input_present && !is_current_present)
+        {
+            context_type = InputContextType.Started;
+        } 
+        else if (!is_input_present && is_current_present)
+        {
+            context_type = InputContextType.Canceled;
+        } 
+        else if (is_input_present && is_current_present)
+        {
+            context_type = InputContextType.Performed;
+        }
+
+        CurrentLateral = vector;
+
+        LateralEvent?.Invoke((CurrentLateral, context_type));
     }
 
     public void OnNorth(InputAction.CallbackContext context)
@@ -76,7 +98,7 @@ public class PlayerInputHandler : MonoBehaviour
         ButtonsEvent?.Invoke(CurrentButtons);
     }
 
-    public void Possess(IPossessable target)
+    public void Possess(IAvatar target)
     {
         if (m_currentPossession != null)
         {

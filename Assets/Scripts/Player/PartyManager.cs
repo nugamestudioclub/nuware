@@ -1,40 +1,110 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 public class PartyManager : MonoBehaviour
 {
-    [SerializeField]
-    private int m_maxPlayers = 4;
+    /// <summary>
+    /// The max number of players to allow in the game.
+    /// </summary>
+    private const int MAX_PLAYERS = 4;
 
-    [SerializeField]
-    private List<Color> m_playerColors = new()
-    {
-        Color.red, Color.green, Color.blue, Color.yellow
-    };
-
+    /// <summary>
+    /// The set of all player_number numbers in-use.
+    /// </summary>
     private ISet<int> m_players;
 
-    private Dictionary<int, int> m_playerInstanceIDMap;
+    /// <summary>
+    /// A map of player_number object Instance Ids to their respective player_number number.
+    /// </summary>
+    private Dictionary<int, int> m_playerIdNumberMap;
+
+    /// <summary>
+    /// A map of player_number numbers to their respective player_number data structure.
+    /// </summary>
     private Dictionary<int, PlayerData> m_playerDataMap;
-    private Dictionary<int, PlayerInputHandler> m_playerInputMap;
 
     private void Awake()
     {
         m_playerDataMap = new();
-        m_playerInputMap = new();
-        m_playerInstanceIDMap = new();
+        m_playerIdNumberMap = new();
 
         m_players = new HashSet<int>();
     }
 
-    public int GetPlayerCount() => m_players.Count;
+    public int GetPlayerNumber(GameObject player_obj) => m_playerIdNumberMap[player_obj.GetInstanceID()];
 
-    public int[] GetPlayers() => m_players.ToArray();
+    public PlayerData GetPlayerData(int player_number)
+    {
+        if (player_number > MAX_PLAYERS && player_number <= 0)
+        {
+            throw new ArgumentOutOfRangeException(string.Format("Player number {0} is invalid.", player_number));
+        }
 
-    public PlayerData GetPlayerData(int id) => m_playerDataMap[id];
+        return m_playerDataMap[player_number];
+    }
 
-    public int GetPlayerID(GameObject player_obj) => m_playerInstanceIDMap[player_obj.GetInstanceID()];
+    /// <summary>
+    /// Registers the given gameobject as a player_number, assigning them the lowest-available player_number number.
+    /// Adds them to the id-number map as well as the number-data map. The default values are -1 for health,
+    /// a random color, and the associated PlayerInputHandler monobehavior. Additionally, the given <paramref name="player"/>
+    /// is reparented to be a child of the PartyManager.
+    /// </summary>
+    /// <param name="player">The gameobject to register. Must have a PlayerInputHandler component.</param>
+    /// <returns>The number of the added player_number.</returns>
+    public int AddPlayer(GameObject player)
+    {
+        if (m_players.Count > MAX_PLAYERS)
+        {
+            Debug.LogWarning("Player count max reached!");
+            return -1;
+        }
+
+        // get lowest number free
+        int player_number = AddLowestNumber();
+
+        // update maps
+        m_playerIdNumberMap.Add(player.GetInstanceID(), player_number);
+        m_playerDataMap.Add(
+            player_number, 
+            new PlayerData(
+                -1, 
+                UnityEngine.Random.ColorHSV(0f, 1f, 1f, 1f, 1f, 1f), 
+                player.GetComponent<PlayerInputHandler>()));
+        m_players.Add(player_number);
+
+        // reparent to manager so it remains persistant.
+        player.transform.parent = transform;
+
+        return player_number;
+    }
+
+    /// <summary>
+    /// Attempts to remove the given player_number number from the party. Destroys the associated player_number object as well.
+    /// </summary>
+    /// <param name="player_number">The player_number number to remove.</param>
+    public void RemovePlayer(int player_number)
+    {
+        if (!m_players.Contains(player_number))
+        {
+            throw new ArgumentException(string.Format("Player number {0} does not exist in {1}", player_number, m_players.ToString()));
+        }
+
+        // remove from map and set
+        m_playerDataMap.Remove(player_number); 
+        m_players.Remove(player_number);
+
+        // remove the associated gameobject as well
+        var player_obj = m_playerDataMap[player_number].InputHandler.gameObject;
+        m_playerIdNumberMap.Remove(player_obj.GetInstanceID());
+
+        Destroy(player_obj);
+    }
+
+    public void Possess(int player_number, IAvatar target_avatar) => m_playerDataMap[player_number].InputHandler.Possess(target_avatar);
+
+    public void Free(int player_number) => m_playerDataMap[player_number].InputHandler.Free();
 
     private int AddLowestNumber()
     {
@@ -48,40 +118,4 @@ public class PartyManager : MonoBehaviour
 
         return low;
     }
-
-    public int AddPlayer(GameObject player)
-    {
-        if (m_players.Count > m_maxPlayers)
-        {
-            Debug.LogWarning("Player count max reached!");
-            return -1;
-        }
-
-        int player_id = AddLowestNumber();
-        player.name = $"Player {player_id}";
-
-        m_playerInstanceIDMap.Add(player.GetInstanceID(), player_id);
-        m_playerDataMap.Add(player_id, new PlayerData(-1, m_playerColors[player_id - 1])); // player HP is set upon game start
-        m_playerInputMap.Add(player_id, player.GetComponent<PlayerInputHandler>());
-
-        player.transform.parent = transform;
-
-        return player_id;
-    }
-
-    public void RemovePlayer(GameObject player)
-    {
-        int id = m_playerInstanceIDMap[player.GetInstanceID()];
-
-        m_playerDataMap.Remove(id); 
-        m_playerInputMap.Remove(id);
-        m_players.Remove(id);
-        m_playerInstanceIDMap.Remove(player.GetInstanceID());
-
-        Destroy(player);
-    }
-
-    public void Possess(int player, IPossessable target) => m_playerInputMap[player].Possess(target);
-
-    public void Free(int player) => m_playerInputMap[player].Free();
 }

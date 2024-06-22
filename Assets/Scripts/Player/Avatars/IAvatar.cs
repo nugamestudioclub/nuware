@@ -4,16 +4,17 @@ using UnityEngine;
 /// <summary>
 /// This is the interface the objects that your players "control" need to implement.
 /// </summary>
-public interface IPossessable
+public interface IAvatar
 {
     /// <summary>
-    /// Primarily used to customize a possessable's appearance to fit a player.
+    /// Primarily used to customize a avatar's appearance to fit a player.
     /// This means changing the color of the item to match the player, swapping
     /// to a correct model, etc.
     /// 
-    /// Takes in the player id associated with the possessable.
+    /// Takes in the player id associated with the avatar, as well as the party manager
+    /// that contains info about the player.
     /// </summary>
-    void Initialize(int player);
+    void Initialize(int player_number, PartyManager manager);
 
     /// <summary>
     /// For one directional input, this is called 3 times:
