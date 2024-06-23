@@ -9,12 +9,25 @@ public interface IAvatar
     /// <summary>
     /// Primarily used to customize a avatar's appearance to fit a player.
     /// This means changing the color of the item to match the player, swapping
-    /// to a correct model, etc.
+    /// to a correct model, etc. Note that this method is meant to be called from PartyManager's
+    /// binding method. If you *need* to call this method way before binding you can, but don't forget
+    /// to modify the 2nd argument of the PartyManager's bind method so that the avatar doesn't
+    /// get initialized twice.
     /// 
     /// Takes in the player id associated with the avatar, as well as the party manager
     /// that contains info about the player.
     /// </summary>
     void Initialize(int player_number, PartyManager manager);
+
+    /// <summary>
+    /// To be used when the Avatar is to be destroyed (i.e. if they die early in a 
+    /// microgame or if the player leaves the game early). Note that unbinding a player from
+    /// their avatar through PartyManager has a parameter to call this method. That is the
+    /// preferred way to do this.
+    /// 
+    /// Used to handle death effects, like playing an animation or something like that.
+    /// </summary>
+    void DestroyAvatar();
 
     /// <summary>
     /// For one directional input, this is called 3 times:

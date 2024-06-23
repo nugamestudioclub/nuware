@@ -1,23 +1,54 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+/// <summary>
+/// A class that handles player input distribution.
+/// </summary>
 public class PlayerInputHandler : MonoBehaviour, IInputHandler
 {
-    [SerializeField]
-    private float m_inputVectorMagnitudeCutoff = 0.1f;
-
+    // since enums can't have members for whatever reason
     private readonly ButtonType[] types = { ButtonType.North, ButtonType.South, ButtonType.East, ButtonType.West };
 
+    [SerializeField, Tooltip("The magnitude of input at which lower values should be regarded as \"not input\".")]
+    private float m_inputVectorMagnitudeCutoff = 0.1f;
+
+    /// <summary>
+    /// The current vector2 input currently held.
+    /// </summary>
     public Vector2 CurrentLateral {  get; private set; }
+
+    /// <summary>
+    /// The current map of button statuses.
+    /// </summary>
     public IDictionary<ButtonType, InputContextType> CurrentButtons { get; private set; }
 
-    public delegate void OnEvent<T>(T eventData);
-    public event OnEvent<(Vector2 Data, InputContextType ContextType)> LateralEvent;
-    public event OnEvent<IDictionary<ButtonType, InputContextType>> ButtonsEvent;
+    /// <summary>
+    /// Generic input event delegate declaration. Listeners must take in the same type argument.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="eventData"></param>
+    public delegate void OnInputEvent<T>(T eventData);
 
-    private IAvatar m_currentPossession;
+    /// <summary>
+    /// The event to invoke when lateral inputs (joystick, WASD) are processed.
+    /// </summary>
+    public event OnInputEvent<(Vector2 Data, InputContextType ContextType)> LateralEvent;
 
+    /// <summary>
+    /// The event to invoke when button input are processed.
+    /// </summary>
+    public event OnInputEvent<IDictionary<ButtonType, InputContextType>> ButtonsEvent;
+
+    /// <summary>
+    /// The current bound avatar that input signals are sent to.
+    /// </summary>
+    private IAvatar m_currentAvatar;
+
+    /// <summary>
+    /// Fills the current button map with each of the four cardinal buttons.
+    /// </summary>
     private void Awake()
     {
         CurrentButtons = new Dictionary<ButtonType, InputContextType>
@@ -29,6 +60,10 @@ public class PlayerInputHandler : MonoBehaviour, IInputHandler
         };
     }
 
+    /// <summary>
+    /// After input has been processed and signaled, if any button map states are canceled, they are
+    /// mapped to None. This is because an input can only be "canceled" for a frame.
+    /// </summary>
     private void LateUpdate()
     {
         foreach (ButtonType button in types)
@@ -36,6 +71,12 @@ public class PlayerInputHandler : MonoBehaviour, IInputHandler
             CurrentButtons[button] = InputContextType.None;
     }
 
+    /// <summary>
+    /// Given an inputaction context, returns Started if the input was started, Performed if performed, and 
+    /// Canceled otherwise.
+    /// </summary>
+    /// <param name="context"></param>
+    /// <returns></returns>
     private InputContextType ParseType(InputAction.CallbackContext context)
     {
         if (context.started) return InputContextType.Started;
@@ -44,11 +85,17 @@ public class PlayerInputHandler : MonoBehaviour, IInputHandler
         return InputContextType.Canceled;
     }
 
+    /// <summary>
+    /// Parses the current lateral input. Rather than using the input context to determine the input
+    /// state, it is derived from the prior input compared with the current input.
+    /// </summary>
+    /// <param name="context"></param>
     public void OnLateral(InputAction.CallbackContext context)
     {
         var vector = context.ReadValue<Vector2>();
         var context_type = InputContextType.None;
 
+        // if input is too weak, it's not to be used
         bool is_input_present = vector.sqrMagnitude > m_inputVectorMagnitudeCutoff;
         bool is_current_present = CurrentLateral.sqrMagnitude > m_inputVectorMagnitudeCutoff;
 
@@ -70,6 +117,10 @@ public class PlayerInputHandler : MonoBehaviour, IInputHandler
         LateralEvent?.Invoke((CurrentLateral, context_type));
     }
 
+    /// <summary>
+    /// A button callback takes in a context and invokes its respective button.
+    /// </summary>
+    #region Button Callbacks
     public void OnNorth(InputAction.CallbackContext context)
     {
         CurrentButtons[ButtonType.North] = ParseType(context);
@@ -97,26 +148,43 @@ public class PlayerInputHandler : MonoBehaviour, IInputHandler
 
         ButtonsEvent?.Invoke(CurrentButtons);
     }
+    #endregion
 
+    /// <summary>
+    /// Given an avatar, binds the callbacks to the two input events.
+    /// </summary>
+    /// <param name="target"></param>
+    /// <exception cref="InvalidOperationException">Thrown if an avatar is already being possessed.</exception>
     public void Possess(IAvatar target)
     {
-        if (m_currentPossession != null)
+        if (m_currentAvatar != null)
         {
-            Debug.LogWarning($"{gameObject.name} is already possessing another object!");
-            return;
+            throw new InvalidOperationException($"{gameObject.name} is already possessing another avatar!");
         }
 
         ButtonsEvent += target.OnButtonEvent;
         LateralEvent += target.OnLateralEvent;
 
-        m_currentPossession = target;
+        m_currentAvatar = target;
     }
 
-    public void Free()
+    /// <summary>
+    /// Frees the current avatar from the player and destroys if it request.
+    /// </summary>
+    /// <param name="destroy_possessed"></param>
+    /// <exception cref="InvalidOperationException">Thrown if no avatar is being possessed.</exception>
+    public void Free(bool destroy_possessed)
     {
-        ButtonsEvent -= m_currentPossession.OnButtonEvent;
-        LateralEvent -= m_currentPossession.OnLateralEvent;
+        if (m_currentAvatar != null)
+        {
+            throw new InvalidOperationException($"{gameObject.name} isn't possessing an avatar!");
+        }
 
-        m_currentPossession = null;
+        ButtonsEvent -= m_currentAvatar.OnButtonEvent;
+        LateralEvent -= m_currentAvatar.OnLateralEvent;
+
+        if (destroy_possessed) m_currentAvatar.DestroyAvatar();
+
+        m_currentAvatar = null;
     }
 }

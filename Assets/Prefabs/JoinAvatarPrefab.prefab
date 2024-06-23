@@ -80,6 +80,9 @@ MonoBehaviour:
     m_NumAlphaKeys: 2
   m_hueChangeAmountScalar: 0.25
   m_hueUpdateLimit: 0.05
+  m_leaveButton: 2
+  m_deathDuration: 4
+  m_launchVector: {x: 0, y: 5, z: -5}
 --- !u!33 &8458223675651855323
 MeshFilter:
   m_ObjectHideFlags: 0

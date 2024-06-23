@@ -4,5 +4,5 @@
 public interface IInputHandler
 {
     void Possess(IAvatar target);
-    void Free();
+    void Free(bool destroy_avatar);
 }

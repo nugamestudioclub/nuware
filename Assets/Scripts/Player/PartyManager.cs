@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// A class for handling player management and storage.
+/// </summary>
 public class PartyManager : MonoBehaviour
 {
     /// <summary>
@@ -33,8 +36,19 @@ public class PartyManager : MonoBehaviour
         m_players = new HashSet<int>();
     }
 
+    /// <summary>
+    /// Given a playerinput-containing object, attempts to find the input's associated player number.
+    /// </summary>
+    /// <param name="player_obj"></param>
+    /// <returns></returns>
     public int GetPlayerNumber(GameObject player_obj) => m_playerIdNumberMap[player_obj.GetInstanceID()];
 
+    /// <summary>
+    /// Given a player number, attempts to get their associated player data information.
+    /// </summary>
+    /// <param name="player_number"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if an invalid player number is given.</exception>
     public PlayerData GetPlayerData(int player_number)
     {
         if (player_number > MAX_PLAYERS && player_number <= 0)
@@ -53,7 +67,7 @@ public class PartyManager : MonoBehaviour
     /// </summary>
     /// <param name="player">The gameobject to register. Must have a PlayerInputHandler component.</param>
     /// <returns>The number of the added player_number.</returns>
-    public int AddPlayer(GameObject player)
+    public int AddPlayerToParty(GameObject player)
     {
         if (m_players.Count > MAX_PLAYERS)
         {
@@ -81,10 +95,10 @@ public class PartyManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Attempts to remove the given player_number number from the party. Destroys the associated player_number object as well.
+    /// Attempts to remove the given player number from the party. Destroys the associated player_number input object as well.
     /// </summary>
     /// <param name="player_number">The player_number number to remove.</param>
-    public void RemovePlayer(int player_number)
+    public void RemovePlayerFromParty(int player_number)
     {
         if (!m_players.Contains(player_number))
         {
@@ -95,16 +109,24 @@ public class PartyManager : MonoBehaviour
         m_playerDataMap.Remove(player_number); 
         m_players.Remove(player_number);
 
-        // remove the associated gameobject as well
+        // remove the associated input gameobject as well
         var player_obj = m_playerDataMap[player_number].InputHandler.gameObject;
         m_playerIdNumberMap.Remove(player_obj.GetInstanceID());
 
         Destroy(player_obj);
     }
 
-    public void Possess(int player_number, IAvatar target_avatar) => m_playerDataMap[player_number].InputHandler.Possess(target_avatar);
+    public void BindPlayer(int player_number, IAvatar target_avatar, bool do_initialize_avatar = true)
+    {
+        if (do_initialize_avatar) target_avatar.Initialize(player_number, this);
 
-    public void Free(int player_number) => m_playerDataMap[player_number].InputHandler.Free();
+        m_playerDataMap[player_number].InputHandler.Possess(target_avatar);
+    }
+
+    public void UnbindPlayer(int player_number, bool invoke_destroy_avatar = true)
+    {
+        m_playerDataMap[player_number].InputHandler.Free(invoke_destroy_avatar);
+    }
 
     private int AddLowestNumber()
     {

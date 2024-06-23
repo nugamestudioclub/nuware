@@ -22,6 +22,11 @@ public abstract class AbstractAvatar : MonoBehaviour, IAvatar
     protected int _boundPlayerNumber { get; private set; }
 
     /// <summary>
+    /// The playerdata associated with the instance of this avatar.
+    /// </summary>
+    protected PlayerData _playerData { get; private set; }
+
+    /// <summary>
     /// Assigns the given values to the fields of the avatar then calls a method to finish initialization.
     /// </summary>
     /// <param name="player_number"></param>
@@ -30,6 +35,7 @@ public abstract class AbstractAvatar : MonoBehaviour, IAvatar
     {
         _partyManager = manager;
         _boundPlayerNumber = player_number;
+        _playerData = manager.GetPlayerData(player_number);
 
         InitAvatar();
     }
@@ -40,6 +46,11 @@ public abstract class AbstractAvatar : MonoBehaviour, IAvatar
     }
 
     public virtual void OnLateralEvent((Vector2 Data, InputContextType ContextType) data_tuple)
+    {
+        // pass
+    }
+
+    public virtual void DestroyAvatar()
     {
         // pass
     }

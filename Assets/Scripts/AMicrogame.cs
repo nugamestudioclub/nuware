@@ -14,12 +14,14 @@ public abstract class AMicrogame : MonoBehaviour, IMicrogame
 
     public virtual float AwakeGame(IList<int> microgame_players, DifficultyType difficulty)
     {
+        var persistance = PersistantManager.instance;
+
         // everyone is a winner, initially :)
         m_currentWinners = microgame_players;
 
         m_partyManager = 
-            PersistantManager.instance.FindInHierarchy(
-                PersistantManager.instance.GetComponentPredicate<PartyManager>())
+            persistance.FindInHierarchy(
+                persistance.GetComponentPredicate<PartyManager>())
             .GetComponent<PartyManager>();
 
         if (!m_partyManager)
@@ -32,22 +34,21 @@ public abstract class AMicrogame : MonoBehaviour, IMicrogame
 
         for (int i = 0; i < m_avatars.Length; i++)
         {
-            m_partyManager.Possess(microgame_players[i], m_avatars[i].Value);
-            m_avatars[i].Value.Initialize(microgame_players[i], m_partyManager);
+            m_partyManager.BindPlayer(microgame_players[i], m_avatars[i].Value);
         }
 
         return CalculateGameDuration(difficulty);
     }
 
     /// <summary>
-    /// Free all avatar player binds. Assumes there to be 4 players.
+    /// UnbindPlayer all avatar player binds. Assumes there to be 4 players.
     /// </summary>
     public virtual void EndGame()
     {
-        m_partyManager.Free(1);
-        m_partyManager.Free(2);
-        m_partyManager.Free(3);
-        m_partyManager.Free(4);
+        m_partyManager.UnbindPlayer(1);
+        m_partyManager.UnbindPlayer(2);
+        m_partyManager.UnbindPlayer(3);
+        m_partyManager.UnbindPlayer(4);
     }
 
     public IList<int> GetWinners()
