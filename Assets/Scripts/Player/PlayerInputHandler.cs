@@ -175,7 +175,7 @@ public class PlayerInputHandler : MonoBehaviour, IInputHandler
     /// <exception cref="InvalidOperationException">Thrown if no avatar is being possessed.</exception>
     public void Free(bool destroy_possessed)
     {
-        if (m_currentAvatar != null)
+        if (m_currentAvatar == null)
         {
             throw new InvalidOperationException($"{gameObject.name} isn't possessing an avatar!");
         }

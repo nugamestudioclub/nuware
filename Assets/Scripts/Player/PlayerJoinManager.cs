@@ -55,7 +55,17 @@ public class PlayerJoinManager : MonoBehaviour
     /// <param name="input"></param>
     public void OnPlayerRemoved(PlayerInput input)
     {
-        int number = m_party.GetPlayerNumber(input.gameObject);
+        int number = -1;
+        
+        try
+        {
+            number = m_party.GetPlayerNumber(input.gameObject);
+        } 
+        catch (KeyNotFoundException)
+        {
+            Debug.Log("Player number not found. This is fine to ignore if the player didn't disconnect via powering-off their controller.");
+            return;
+        }
 
         // free the player's avatar (and destroy it)
         m_party.UnbindPlayer(number);

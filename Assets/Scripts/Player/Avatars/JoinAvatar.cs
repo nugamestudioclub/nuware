@@ -51,11 +51,21 @@ public class JoinAvatar : AbstractAvatar
     private float m_hueChangeAmount;
 
     /// <summary>
+    /// It's possible for the player to join by pressing the leave button. Without this boolean to block leave attempt
+    /// before the first tick, the player would join and instantly leave, allowing them to spawn a zillion avatars.
+    /// 
+    /// It's funny, though.
+    /// </summary>
+    private bool m_doIgnoreLeaveInput;
+
+    /// <summary>
     /// Called upon creation. Caches components and sets up hue fields so that the first call to UpdateColor
     /// actually updates the color of the avatar.
     /// </summary>
     private void Awake()
     {
+        m_doIgnoreLeaveInput = true;
+
         m_renderer = GetComponent<MeshRenderer>();
         m_rigidbody = GetComponent<Rigidbody>();
 
@@ -69,6 +79,10 @@ public class JoinAvatar : AbstractAvatar
     /// </summary>
     private void Update()
     {
+        // if this ticks once, then we should stop ignoring input bc that means the player didn't join by pressing
+        // the "leave" button.
+        m_doIgnoreLeaveInput = false;
+
         if (Mathf.Approximately(m_hueChangeAmount, 0f)) return;
 
         m_hue += m_hueChangeAmount * Time.deltaTime;
@@ -97,7 +111,7 @@ public class JoinAvatar : AbstractAvatar
     /// <param name="map"></param>
     public override void OnButtonEvent(IDictionary<ButtonType, InputContextType> map)
     {
-        if (map[m_leaveButton] == InputContextType.Performed)
+        if (!m_doIgnoreLeaveInput && map[m_leaveButton] == InputContextType.Performed)
         {
             // free the player from this binding, invoking the DestroyAvatar method
             _partyManager.UnbindPlayer(_boundPlayerNumber);

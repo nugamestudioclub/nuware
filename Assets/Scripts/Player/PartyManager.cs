@@ -105,17 +105,23 @@ public class PartyManager : MonoBehaviour
             throw new ArgumentException(string.Format("Player number {0} does not exist in {1}", player_number, m_players.ToString()));
         }
 
-        // remove from map and set
-        m_playerDataMap.Remove(player_number); 
-        m_players.Remove(player_number);
-
-        // remove the associated input gameobject as well
+        // remove the associated input gameobject
         var player_obj = m_playerDataMap[player_number].InputHandler.gameObject;
+
+        // remove player entries
         m_playerIdNumberMap.Remove(player_obj.GetInstanceID());
+        m_playerDataMap.Remove(player_number);
+        m_players.Remove(player_number);
 
         Destroy(player_obj);
     }
 
+    /// <summary>
+    /// Binds a player of the given number to the given avatar, initializing the avatar if requested.
+    /// </summary>
+    /// <param name="player_number"></param>
+    /// <param name="target_avatar"></param>
+    /// <param name="do_initialize_avatar"></param>
     public void BindPlayer(int player_number, IAvatar target_avatar, bool do_initialize_avatar = true)
     {
         if (do_initialize_avatar) target_avatar.Initialize(player_number, this);
@@ -123,11 +129,20 @@ public class PartyManager : MonoBehaviour
         m_playerDataMap[player_number].InputHandler.Possess(target_avatar);
     }
 
+    /// <summary>
+    /// Unbinds the given player number from their avatar, potentially destroying it if requested.
+    /// </summary>
+    /// <param name="player_number"></param>
+    /// <param name="invoke_destroy_avatar"></param>
     public void UnbindPlayer(int player_number, bool invoke_destroy_avatar = true)
     {
         m_playerDataMap[player_number].InputHandler.Free(invoke_destroy_avatar);
     }
 
+    /// <summary>
+    /// Returns the lowest free player number.
+    /// </summary>
+    /// <returns>The lowest free number.</returns>
     private int AddLowestNumber()
     {
         var list = m_players.ToList(); // not great but whatever
